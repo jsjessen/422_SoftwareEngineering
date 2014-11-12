@@ -1,0 +1,121 @@
+I have an idea for what to do, but it is somewhat lofty.  We probably only need to complete part of it for Evan to be satisfied on Wednesday.  Once we get it all working, it should work as a test apparatus for most, if not all, future tests.
+
+Let me know what you want to work on first and I'll work on another part. Whoever finishes first can pick the next section they want and share it with the other.
+
+My idea:
+
+    We write shell script(s) to easily generate fresh disks (empty or with contents): disk_0, disk_1, disk_2, ..., disk_x
+    Have shell script files where each line of a file is a command:  0_cmd.sh, 1_cmd.sh, 2_cmd.sh, ..., y_cmd.sh
+    In our test.c file, 
+        we have a list of executable files to compare: { "myfs", "yourfs", "kcfs", ... } 
+        we have a list of disks { "disk_0", "disk_1", "disk_2", ..., "disk_x" }
+            Better yet would be to first run the disk generating shell scripts, then making a list of all the resulting disks
+    We modify our test.c so that, for each executable, input is redirected such that cmd_x.sh gives the commands.
+    Additionally, cmd_x.sh should be executed as a shell script, so that linux is essentially one of the executables.
+    For each executable, output is redirected to a file similar to the file's name: myfs -> y_myfs_x.out, yourfs -> y_yourfs_x.out, kcfs -> y_kcfs_x.out, ...
+    Finally, we modify our file comparison algorithm so that it is generalized and does a more sophisticated comparison than line by line.
+    Compare the files, sending that output to log files:  myfs_yourfs.log, myfs_kcfs.log, myfs_linux.log, etc...
+    Do this for each disk, for each command file
+
+Now to run tests, we just need to edit one or more sh script files (disk generating scripts, command giving scripts).
+
+Minimum:
+
+    manually create a disk for testing
+    manually create a single cmd.sh
+    run one of our ext2fs executables
+    run either kc's ext2fs or a sh script with Linux
+    compare the 2 output files
+    end up with a single log file, evaluating the differences in output of the 2 programs given the same disk/commands
+
+https://github.com/jsjessen/422_SoftwareEngineering
+
+Example 0_cmd.sh
+#!/bin/sh
+
+# not the best test, just an example
+pwd
+mkdir dir1
+ls
+creat file1
+ls
+cd dir1
+pwd
+cd ..
+rmdir dir1
+ls
+unlink file1
+ls
+
+Any thoughts on the general idea?  Do you think it is robust and general enough to work for pretty much all future tests?  Suggestions for improving the plan?
+
+-James (2am)
+
+--------------------------------------------------
+
+I think I will start with the shell scripts for the fresh disks as well as the commands. How would we go about outputting the resulting disk filenames back into the program, write them to a  quick file, or use some sort of pipe reader/writer method?
+
+
+To compare the output log files we should be able to use the core of the comparing code that you wrote for the last part, but this should be much more trivial as there won't be as much garbage and different delimiters to parse through. For the output of both KC's and one of our FS, would we just check the PWD output after the chdir to asssure that each part of  the pathname is present on the disk?
+
+
+This approach is pretty robust and should cover just about everything needed to show that the mkdir function is performing properly as it should. Especially because multiple disks are being used and a final log file generated to display results will give concrete prove of what was happening behind the scenes. If you want me to do something in particular for one of the parts let me know, but we can step through each part of this and communicate in between so that we are on the same page.
+
+-Casey
+
+--------------------------------------------------
+
+I think consistent naming conventions and putting similar files in a folder will help. For instance, we could loop through trying to open mkdisk_x for read; upon success close and run with either system () or execv() (whatever variation I used in text.c); upon failure, assume that file mkdisk_x doesn't exist and any mkdisk_? > x also don't exist.
+
+If we go with putting the names in a file, we could use the makefile to run the scripts for fresh disks each time we compile.
+
+I lean towards the former, because we will probably always want to use all of the various disks we create.
+
+It just occurred to me that we should never directly use the disks we create. Each executable needs to make a copy for itself, so none of then use a disk modified by another.
+
+Yep, that sounds like a good way to test cd. The nice thing about having working code to compare ours to is that we don't even need to figure out what our output should be, just that if it doesn't match KC's/Linux, we are wrong.
+
+-James
+
+--------------------------------------------------
+
+Okay, I have been using conventions such as disk_X and cmd_X, and then shell script that creates the disk images also spits out an output file with the names of the disks created. Since we don't want to directory use the disks we create, should the shell scripts (cmd_X...) first copy and then open the file copy, perform commands, and then close and remove the file copy at the end of the script? I think this would work. How many different cmd scripts are we looking to have, because I have 3 that run various types of command sequences.  These range from simply creating and traversing directories to performing commands on directories meant for files, and vice-versa. Where should I go from here?
+
+-Casey
+
+--------------------------------------------------
+
+We could swap roles this time.  I'll work on a hopefully sophisticated compare function.
+
+// Given an array of file names, ending with a NULL element (like argv)
+// Returns the name of the file containing the analysis
+char* compare(char* files[])  
+
+You can modify the test.c file so it is more generalized and does this stuff:
+
+    Populate char* Program[]
+    Populate char* Disk[]
+    Populate char* Command[]
+
+I'm not sure whether we should run all commands on every disk, or if we want scenarios we craft with a disk and corresponding commands tailored for that particular disk setup.
+I'm going to assume that later, but if you've put work into the former go ahead and roll with that.  Both ways are good.
+
+    For each prog in Program
+        For each cmd in Command and disk in Disk pair
+
+            Copy disk, call it something identifiable with the scenario like prog_cmd_disk
+            Redirect stdin for prog so it comes from cmd
+            Redirect stdout for prog so it goes into an identifiable output file like prog_cmd_disk.out
+            Execute prog
+
+    Create a char* array of file names, making sure to end it with a NULL element so I can loop through it safely.
+        Each list should be the output files for the different programs executing with the same cmd/disk setup.
+    Use my compare function on each of these lists.
+
+We may want to keep the initial disks and the copied disks around.  That way if we see some weird stuff in the comparison file, we can figure out what was going on by referencing the initial disk, command list, and the now modified copied disk.
+
+This shouldn't be too hard to implement (i think) since the old test.c already handles similar stuff.  Should mainly be generalizing names, adding in some loops, a bit more redirection, and whatnot.  Let me know if you run into any major problems.
+
+-James
+
+--------------------------------------------------
