@@ -1,0 +1,14 @@
+pwd
+mkdir a
+ls
+cd a
+pwd
+mkdir b
+ls
+cd b
+pwd
+create example
+ls
+unlink example
+ls
+quit

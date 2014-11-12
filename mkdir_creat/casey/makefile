@@ -12,7 +12,7 @@ OBJS = test.o compare.o input.o
 
 CC = gcc
 DEBUG = -Wall -g -O0
-FLAGS = 
+FLAGS = $(DEBUG)
 
 run : $(OBJS)
 	$(CC) -o $(NAME) $(OBJS) $(FLAGS)
