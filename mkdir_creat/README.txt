@@ -2,6 +2,11 @@ The generalized test harness we worked on for our meeting Wed Nov 12 has been mo
 It can be accessed using the softlink "sidetrack" in this directory.
 ------------------------------------------------------------------------------------
 
+James: Compare function, some test files, let casey know what's being compared -> fill in Expected
+Casey: Reading files into arrays, some test files -> fill in Expected
+
+------------------------------------------------------------------------------------
+
 Previously, when we looked at the functions involved in creat and mkdir
 We saw the functions we were going to rely on for the unit tests
 The situation made it appear that the unit tests relied on circular logic and were generally error prone.
