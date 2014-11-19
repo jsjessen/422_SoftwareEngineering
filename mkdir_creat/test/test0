@@ -1,10 +1,10 @@
-#ParentsInodeNumber MyInodeNumber NameLength Name Mode(dir/reg, not perm) MyLinkCount MySize MyUID MyGID
+#ParentsInodeNumber MyInodeNumber RecordLength NameLength Name Mode(dir/reg, not perm) MyLinkCount MySize MyUID MyGID
 
 # mode for RegFile: 0100000
 # mode for DirFile: 0040000
 
 mkdir animal
-2 12 6 animal 0040000 2 1024 0 0
+2 12 980 6 animal 0040000 2 1024 0 0
 
 mkdir /animal/cat
 mkdir animal/dog
