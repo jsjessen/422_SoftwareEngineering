@@ -1,7 +1,8 @@
+#include <stdio.h>
+
 #include <global.h>
-#include <input.h>
-#include <print.h>
-#include <memory.h>
+#include <transfer.h>
+
 
 MINODE *root;
 PROC *running; // Points at the PROC structure of the current running process
@@ -38,7 +39,7 @@ OPEN_FILE OpenFileTable[NOFT];
 // ------------------------------------------------------------------------
 
 // Initialize the data file system structures
-void initialize_fs(char* device_name)
+void initialize_fs()
 {
     int i = 0;
 
@@ -106,7 +107,6 @@ void initialize_fs(char* device_name)
     }
 
     root = NULL;
-    mount_root(device);
 }
 
 // Mount a device containing a file system as the root device.
@@ -169,3 +169,4 @@ void mount_root(char* device_name)
     free(sp);
     free(gp);
 }
+

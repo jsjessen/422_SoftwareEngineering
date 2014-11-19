@@ -8,90 +8,102 @@
 
 #include <init.c>
 
-typedef struct expected_outcome
+typedef struct state 
 {
+    int parent_ino;
+    int my_ino;
+    
+    int name_len;
     char[256] name;
-    int ino;
-    int parent_ino
 
-    int free_blocks_count;
-    // Compare with:
-    // s_free_blocks_count;
-    // bg_free_blocks_count;
-
-    int free_inodes_count;
-    // Compare with:
-    // s_free_inodes_count;
-    // bg_free_inodes_count;
-
-    // Compare with inode's corresponding value
     u16 mode;
+    u16 links_count;
+    int size;
     u16 uid;
     u16 gid;
-    int size;
-    u16 links_count;
-    u32 blocks;
-    u32 block_0;
-    u32 block_1;
 
-} Expect;
+} STATE;
+
+int test_quit()
+{
+    int i = 0;
+    MINODE* mip = NULL;
+    
+    for(i = 0; i < NMINODES; i++)
+    {
+        mip = &MemoryInodeTable[i];
+
+        if(mip->refCount > 0)
+            iput(mip);
+    }
+}
+
+bool isStateMatch(int cmd_argc, int char* cmd_argv[], char* device, STATE Expect[i])
+{
+    // Using stat to verify
+    
+    return true;
+}
 
 int main(int argc, char* argv[])
 {
-    // Loop through test0, test1, testx, until unable to open
-    static const char* device = "disk/test_disk";
-
-    // Input[] & Expect[] are parallel arrays
-    // except the last "quit" entry
-    //
-    // Make static global
-    // Populate from test_file
-    static const char* Input[] =
-    {   
-        "mkdir apple",
-        "mkdir pear",
-        "cd pear",
-        "quit"
-    };
-
-    // Make static global
-    // Populate from test_file
-    static const Expect[] = 
-    {
-        { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
-        { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
-        { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
-    };
-
-    initialize_fs(device); 
+    initialize_fs(); 
+    mount_root(device);
 
     running = &ProcessTable[0];
     running->status = READY;
     running->cwd = root; root->refCount++;
     running->uid = SUPER_USER;
 
-    int i = 0;
-    while(true)
+
+    // For each test file in directory test:
     {
-        char** cmd_argv = NULL;
-        int    cmd_argc = 0;
-        int  (*cmd_fptr)(int, char**) = NULL; 
+        static char* device = NULL;
 
-        cmd_argv = parse(Input[i], " "); // Parse input into cmd argv[]
+        // Parallel arrays
+        static char** Input  = NULL;
+        static STATE* Expect = NULL;
 
-        while(cmd_argv[++cmd_argc]){}    // Determine cmd argc
 
-        cmd_fptr = get_cmd(cmd_argv[0]); // Get the command's function pointer
-        cmd_fptr(cmd_argc, cmd_argv);    // Execute the command with parameters
-        free_array(cmd_argv);
+        // get name of device
+        // populate Input[]
+        // populate Expect[]
 
-        // Compare with Expect[i]
-        // If a test fails, go to next test file
-        // because the error will cascade
 
-        //compare(cmd_argc, cmd_argv);
+        // Loops through all elements of Input
+        int i = 0;
+        while(true)
+        {
+            bool isMatch = false;
 
-        i++;
+            char** cmd_argv = NULL;
+            int    cmd_argc = 0;
+            int  (*cmd_fptr)(int, char**) = NULL; 
+
+            if(!Input[i])
+            {
+                test_quit();
+                break;
+            }
+
+            cmd_argv = parse(Input[i], " "); // Parse input into cmd argv[]
+
+            while(cmd_argv[++cmd_argc]){}    // Determine cmd argc
+
+            cmd_fptr = get_cmd(cmd_argv[0]); // Get the command's function pointer
+            cmd_fptr(cmd_argc, cmd_argv);    // Execute the command with parameters
+
+            // Check if current state matches expected state
+            // If they don't match, stop testing for this test file 
+            // because the state mismatch will likely cascade after this point 
+            isMatch = isStateMatch(cmd_argc, cmd_argv, device, Expect[i]);
+            free_array(cmd_argv);
+
+            if(!isMatch)
+                break;
+
+            i++;
+        }
     }
 
     return 0;
