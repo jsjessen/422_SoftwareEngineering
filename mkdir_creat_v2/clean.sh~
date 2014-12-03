@@ -1,0 +1,5 @@
+#! /bin/bash
+sudo mkfs.ext2 diskimage 1440
+
+
+

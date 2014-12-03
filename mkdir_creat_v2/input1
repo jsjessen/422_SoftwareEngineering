@@ -1,0 +1,52 @@
+mkdir animal
+mkdir animal/cat
+mkdir animal/dog
+mkdir animal/cat/big
+cd    animal
+mkdir cat/small
+mkdir ../fruit
+cd
+mkdir fruit/small
+mkdir fruit/big
+creat animal/cat/kitty
+cd animal
+mkdir dog
+creat dog/lab
+#
+cd cat
+creat ./cougar
+creat lion
+cd
+creat fruit/small/plum
+#
+cd fruit/big
+creat mellon
+#
+mkdir ParentNotExist/newdir
+#
+mkdir /ParentNotExist/newdir
+creat FileParent
+#
+mkdir FileParent/newdir
+#
+mkdir /FileParent/newdir
+mkdir GoodDir
+mkdir GoodDir/iExist
+#
+mkdir GoodDir/iExist
+#
+creat ParentNotExist/newdir
+#
+creat /ParentNotExist/newdir
+#
+creat FileParent/newdir
+#
+creat /FileParent/newdir
+#
+creat GoodDir/iExist
+#
+creat GoodDir/iExist
+#
+mkdir
+#
+mkdir diraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa250+4  

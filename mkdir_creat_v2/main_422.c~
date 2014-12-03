@@ -1,0 +1,79 @@
+// Casey O'Leary
+// CS 360 Main for ext 2 file system
+#include "type.h"
+#include "lab8_422.h"
+int main(int argc, char *argv[])
+{
+	int i, j, cmd, error_count;
+	unsigned int ino_num;
+	//char line[128], cname[64], parameter[64];
+	const char *line;
+	ssize_t read, len = 0;
+	FILE *input = NULL;
+	// arrays for the commands, assuming there are less than 25 commands/pathnames and they will not be longer
+	// than 32 characters
+	char *commands[32];
+	char *pathnames[32];	
+	// Initialization of ext2 file system
+	init();
+	mount_root(argv[1]);
+	printf("Dev=%d, inodeBegin=%d, bmap=%d, imap=%d, ninodes=%d\n", dev, inodeBegin, bmap, imap, ninodes);
+	
+	printf("\n*********** Starting mkdir & creat testing ************\n");
+	if (!(input = fopen(argv[2], "r"))) // check for error opening file from command args
+	{
+		printf("Error opening file %s\n", argv[1]);
+		exit(0);
+	}
+	
+	// Get input from file
+	i = 0;
+	while (read = getline(&line, &len, input)) {
+		commands[i] = strtok(line, " ");
+		pathnames[i] = strtok(NULL, "");
+		printf("cmd= %s path = %s\n", commands[i], pathnames[i]);
+		i++;
+	}
+	commands[i] = NULL;
+	pathnames[i] = NULL;
+	free(line);
+	// Execute Commands
+	i = 0;
+	while (commands[i])
+	{
+		for (j = 0; j < 11; j++) 
+		{
+			if (strcmp(cmnds[j], commands[i]) == 0)
+			{
+				printf("Running %s %s\n", commands[i], pathnames[i]);
+				fptr[j](pathnames[i]);
+			}
+		}
+	}
+	// Validate commands were executed succesfully
+	i = 0;
+	while (pathnames[i])
+	{
+		printf("Validating %s....\n", pathnames[i]);
+		if ((ino_num = getino(dev, pathnames[i])) > 0) // Check valid inode number
+		{
+			printf(" Valid inode number( %d ) for %s\n", ino_num, pathnames[i]);
+		}
+		else
+		{
+			printf(" Invalid inode number for %s\n", pathnames[i]);
+			error_count++;
+		}
+	}
+	
+	printf("\n--------- Results --------- \n");
+	if (!error_count)
+	{
+		printf("\n SUCCESS! All commands executed correctly, valid inode numbers for all pathnames.\n");
+	}
+	else
+	{
+		printf(" FAILED! There were %d invalid inodes, not all commands executed correctly. \n", error_count);
+	}
+	return;
+}

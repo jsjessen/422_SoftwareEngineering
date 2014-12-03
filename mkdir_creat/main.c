@@ -25,6 +25,118 @@ typedef struct state
 
 } STATE;
 
+// Gloabl Input and Expected Arrays
+char** Input  = NULL;
+struct STATE* Expect[32];
+
+void fill_expected(struct STATE* newState, char* line) {
+	char* token = NULL, part = NULL; copyLine = NULL;
+	char* tokens[10];
+	int i = 0;
+	
+	// Copy the line because we will destroy it
+	copyLine = (char *) malloc(strlen(line) + 1 *sizeof(char));
+	strcpy(copyLine, line);
+	
+	//tokenize input before putting into expected
+	token = strtok(line, " ");
+	tokens[i++] = token;
+	while (token = strtok(NULL, " "))
+	{
+		tokens[i++] = token;
+	}
+	i=0;
+	// Populate the expected state
+	newState->parent_ino = strtol(tokens[i++], &part, 10);
+	newState->my_ino = strtol(tokens[i++], &part, 10);
+	newState->rec_len = strtol(tokens[i++], &part, 10);
+	newState->name_len = strtol(tokens[i++], &part, 10);
+	strcpy(newState->name, tokens[i++]);
+	newState->type = strtol(tokens[i++], &part, 10);
+	newState->links_count = strtol(tokens[i++], &part, 10);
+	newState->size = strtol(tokens[i++], &part, 10);
+	newState->uid = strtol(tokens[i++], &part, 10);
+	newState->gid = strtol(tokens[i++], &part, 10);
+}
+
+int line_check(char* line) {
+	char* commands[3] = { "mkdir", "creat", "cd"};
+	char* subStr = NULL;
+	int i;
+	
+	// Check for blank line
+	if (strlen(line) < 2)
+		return 0;
+	
+	// Check if the line is a comment
+	if (line[0] == '#')
+		return 0;
+	
+	// Check if line has a command in it
+	for (i = 0; i < 3; i++)
+	{
+		if ( subStr = strstr(line, commands[i]) ) //contains one of the command substrings
+			return 1;
+	}
+	// If we are here, then the line must be an expected line
+	return 2;
+}
+	
+
+	
+void populate_arrays(char* filename) // Eventually need to free all of the allocated memory after all test commands are performed
+{
+	FILE* testfile = NULL;
+	ssize_t read;
+	ssize_t len = 256;
+	
+	char path[64];
+	char* line;
+	int line_check = 0, i = 0, j = 0;
+	bool isPair = false;
+	
+	struct state* temp_Expect = NULL;
+	char* temp_command = NULL;
+	
+	
+	// Create the path for the test file
+	strcat(path, "test/");
+	strcat(path, filename);
+	
+	testfile = fopen(path, "r");
+	if (!testfile)
+	{
+		printf("Error opening file: %s\n", path);
+		return;
+	}
+	
+	// Start reading
+	while ( (read = getline(&line, &len, testfile)) != -1)
+	{
+		line_check = check_line(line);
+		// Input line
+		if (line_check == 1) 
+		{
+			//fill Input with newly allocated string
+			temp_command = (char *) malloc(strlen(line) + 1 * sizeof(char));
+			strcpy(temp_command, line);
+			//printf("temp_command: %s\n", temp_command);
+			Input[i++] = temp_command;
+		 
+		}
+		// Expect Line
+		if (line_check == 2)
+		{
+			// fill Expected with newly allocated Expect
+			temp_Expect = (STATE *) malloc(sizeof(STATE));
+			fill_expected(temp_Expect, line);
+			Expect[j++] = temp_Expect;
+			
+		}
+	}
+}
+
+
 void quit_test()
 {
     int i = 0;
@@ -172,16 +284,12 @@ int main(int argc, char* argv[])
     // For each test file in directory test:
     {
         char* device_name = NULL;
-        int device = 0;
-
-        // Parallel arrays
-        char** Input  = NULL;
-        STATE* Expect = NULL;
-
+        int device = 0, j = 0;
+		char* test_file_names[3] = {  "test0", "test1", NULL };
+		
 
         // get name of device
-        // populate Input[]
-        // populate Expect[]
+        device_name = argv[1];
 
 
         initialize_fs(); 
@@ -191,6 +299,10 @@ int main(int argc, char* argv[])
         running->status = READY;
         running->cwd = root; root->refCount++;
         running->uid = SUPER_USER;
+        
+        // Populate Arrays
+        populate_arrays(test_file_names[j]);
+        // Loop entire program for each test file?
 
 
         // Loops through all elements of Input
