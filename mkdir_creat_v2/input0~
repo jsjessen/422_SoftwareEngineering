@@ -2,11 +2,7 @@ mkdir firstDir
 #
 mkdir firstDir
 creat File1
-#
-creat File1
 cd firstDir
-creat File1
-mkdir firstDir
 mkdir secondDir
 mkdir thirdDir
 cd secondDir
@@ -15,3 +11,11 @@ creat File3
 creat File4
 mkdir fourthDir
 creat File5
+#
+creat File2
+#
+creat File3
+#
+mkdir File2/faildir
+#
+mkdir File3/failDir

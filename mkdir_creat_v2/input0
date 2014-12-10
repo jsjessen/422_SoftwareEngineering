@@ -11,3 +11,14 @@ creat File3
 creat File4
 mkdir fourthDir
 creat File5
+#
+creat File2
+#
+creat File3
+#
+mkdir File2/faildir
+#
+mkdir File3/failDir
+cd
+#
+creat File1/Parentfile

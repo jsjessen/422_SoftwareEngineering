@@ -10,7 +10,9 @@ mkdir fruit/small
 mkdir fruit/big
 creat animal/cat/kitty
 cd animal
+mkdir dog
 creat dog/lab
+#
 cd cat
 creat ./cougar
 creat lion

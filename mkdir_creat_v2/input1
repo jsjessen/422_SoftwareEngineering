@@ -12,13 +12,11 @@ creat animal/cat/kitty
 cd animal
 mkdir dog
 creat dog/lab
-#
 cd cat
 creat ./cougar
 creat lion
 cd
 creat fruit/small/plum
-#
 cd fruit/big
 creat mellon
 #

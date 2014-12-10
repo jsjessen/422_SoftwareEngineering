@@ -722,22 +722,22 @@ int make_dir(char *pathname)
 		ino = getino(dev1, parent);
 	if(ino <= 0) // Check validity of pathname
 	{
-		printf("ERROR: INVALID PATHNAME\n");
+		printf("\nERROR: INVALID PATHNAME\n");
 		return -1;
 	}
 	mip = iget(dev1, ino); // get the inode from the disk
 	if(!S_ISDIR(mip->INODE.i_mode)) // Is this a Directory? If it is, then we cannot continue, so put inode back
 	{
-		printf("ERROR: NOT A DIRECTORY\n");
+		printf("\nERROR: NOT A DIRECTORY\n");
 		iput(dev1, mip);
-		return -1;
+		return -2;
 	}
 	ino = search(dev1, child, &(mip->INODE)); // Check if the basename exists under the parent, return the inode #
 	if(ino > 0) //If the inode already exists then put it back
 	{
-		printf("ERROR: DIRECTORY ALREADY EXISTS\n");
+		printf("\nERROR: DIRECTORY ALREADY EXISTS\n");
 		iput(mip->dev, mip);
-		return -1;
+		return -3;
 	}
 	//printf("Going into the mkdir function\n"); //FOR TESTING
 	r = my_mkdir(mip, child); // Make the directory because all it has passedd all error cases
@@ -951,22 +951,22 @@ int creat_file(char* pathname)
 	ino = getino(dev1, parent);
 	if(ino <= 0)
 	{
-		printf("ERROR: INVALID PATHNAME\n");
+		printf("\nERROR: INVALID PATHNAME\n");
 		return -1;
 	}
 	mip = iget(dev1, ino);
 	if(!S_ISDIR(mip->INODE.i_mode))
 	{
-		printf("ERROR: PARENT IS NOT A DIRECTORY\n");
+		printf("\nERROR: PARENT IS NOT A DIRECTORY\n");
 		iput(dev1, mip);
-		return -1;
+		return -2;
 	}
 	ino = search(dev1, child, &(mip->INODE));
 	if(ino > 0)
 	{
-		printf("ERROR: FILE ALREADY EXISTS UNDER PARENT");
+		printf("\nERROR: FILE ALREADY EXISTS UNDER PARENT\n");
 		iput(mip->dev, mip);
-		return -1;
+		return -3;
 	}
 	r = my_creat(mip, child);
 	iput(mip->dev, mip);

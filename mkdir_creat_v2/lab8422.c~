@@ -730,14 +730,14 @@ int make_dir(char *pathname)
 	{
 		printf("ERROR: NOT A DIRECTORY\n");
 		iput(dev1, mip);
-		return -1;
+		return -2;
 	}
 	ino = search(dev1, child, &(mip->INODE)); // Check if the basename exists under the parent, return the inode #
 	if(ino > 0) //If the inode already exists then put it back
 	{
-		printf("ERROR: DIRECTORY ALREADY EXISTS");
+		printf("ERROR: DIRECTORY ALREADY EXISTS\n");
 		iput(mip->dev, mip);
-		return -1;
+		return -3;
 	}
 	//printf("Going into the mkdir function\n"); //FOR TESTING
 	r = my_mkdir(mip, child); // Make the directory because all it has passedd all error cases

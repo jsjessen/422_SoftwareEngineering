@@ -54,17 +54,84 @@ void clean_memory(char **commands, char **pathnames)
 	return;
 }
 
-// More extensive and simpler checks can be implemented so code is more clear
-/*void check_command(char *command, char *path, int *return_value, int *flag_ptr)
+
+int command_type(char *command) 
 {
 	
-}*/ 
+	if (strcmp(command, "mkdir") == 0)
+		return 3;
+	else if (strcmp(command, "creat") == 0)
+		return 2;
+	else if (strcmp(command, "cd") == 0)
+		return 1;
+	else
+		return 0;
+}
+
+int exists(char *path)
+{
+	int num;
+	num = getino(dev, path);
+	if ( num > 0 )
+	{
+		return num;
+	}
+	else
+		return num;
+}
+
+void check_cmd(int *flag, int return_value, int *error_count, char *path)
+{
+	int inode_number = exists(path);
+	// First check if command returned positive value
+	if (return_value > 0) // Succesful return value
+	{
+		// Check fail flag, was this command supposed to be succesful or not?
+		if (*(flag) > 0)
+		{
+			printf("Invalid: Command returned successful, but was not supposed too.\n");
+			*(error_count) = *(error_count) + 1;
+		}
+		else // Command was supposed to be succussful
+		{
+			// Make sure path has a valid inode number
+			if (inode_number > 0)
+			{
+				printf("Valid result: Command executed succesfully. INODE#: %d\n", inode_number);
+			}
+			else
+			{
+				printf("Invalid result: succesful return value, but invalid INODE#\n");
+				*(error_count) = *(error_count) + 1;
+			}
+		}
+		*(flag) = 0;
+		
+	}
+	else // Command returned an error, check if it was supposed to fail or not
+	{
+		
+		if (*(flag) > 0)
+		{
+			printf("Vaid result: Command failed as it should.\n");
+		}
+		else
+		{
+			printf("Invalid result: Command failed when it should not have.\n");
+			*(error_count) = *(error_count) + 1;
+		}
+		*(flag) = 0;
+	}
+}
+
+
 	
 
 int main(int argc, char *argv[])
 {
-	int i, j, k, cmd, error_count = 0, execution_value, fail_flag = 0, pid = 0, status = 0;
-	unsigned int ino_num;
+	int i, j, k;
+	int cmd = 0, error_count = 0, execution_value = 0, fail_flag = 0, pid = 0, status = 0, type = -1, total = 0;
+	unsigned int ino_num = -1;
 	
 	//input files
 	char *files[4] = { "input0", "input1", "input2", NULL };
@@ -77,7 +144,7 @@ int main(int argc, char *argv[])
 	char *commands[32];
 	char *pathnames[32];*/
 	
-	char *line = NULL;
+	char *line = NULL, *command = NULL, *path = NULL;
 	
 	// Initialization of ext2 file system
 	init();
@@ -99,8 +166,8 @@ int main(int argc, char *argv[])
 		// Get input from file
 		i = 0;
 		line = (char *) malloc(len +1);
-		while ((read = getline(&line, &len, input)) != -1) {
-			char *token, *command, *path;
+		while ((read = getline(&line, &len, input)) != -1) 
+		{
 			line[strlen(line)-1] = 0; // kill \r at end
 		
 			// Check for the fail flag, meaning the command is supposed to fail based on previous inputs
@@ -117,54 +184,35 @@ int main(int argc, char *argv[])
 				// had ideas initially, but then changed approach, still could do something with this later
 				/*commands[i] = command; 
 				pathnames[i] = path;*/
-		
+				type = command_type(command);
 				
-				// Run the Command and set the error checking value, which is already in the function so no need to duplicate
+				// Run the Command and set the error checking value, 
+				// which is already returned in the function so no need to duplicate code
 				execution_value = run_command(command, path);
-		
-				// Search for inode num with that pathname, to see if it was actually created on the disk
-				// but only if a valid command & pathname combo
-				// We are going to ignore change of directory commands (which needs to be changed/edited
-				// Also a check to determine whether the flag should fail or not, which is in input file
-				if (strcmp(command, "cd") != 0){ 
-					if (( (ino_num = getino(dev, path)) > 0) && (execution_value > 0))
-					{
-						printf("Success, valid command. Inode created. ino_num: %d\n", ino_num);
-						// Lets print out the contents of directory to give more proof that this happened
-						//run_command("ls", NULL);
-					}
-					else if (fail_flag == 1)
-					{
-						printf("Command failed as expected.\n");
-						fail_flag = 0;
-					}
-					else
-					{
-						printf("Failure, invalid command. No new Inode created.\n");
-						error_count++;
-					}
-				}
-				else
-				{
-					if (flag_fail == 1)
-						printf("Command failed as expected.\n");
-				}
+				total++;
 				
-		
-		
-		
-				//free(command);
-				//free(path);
+	
+				switch(type)
+				{
+					case 3: check_cmd(&fail_flag, execution_value, &error_count, path);
+						break;
+					case 2: check_cmd(&fail_flag, execution_value, &error_count, path);
+						break;
+					case 1: printf("\n**CD command executed, not yet considered in this test\n");
+						break;
+					case 0: printf("\nInvalid command input for this automated test.\n");
+						break;
+					default: printf("\n");
+				}
 				i++;
 			}
+			else // # character in file indicates command should fail, or have an error during execution
+				fail_flag = 1;
 			
 			printf("\n");
 		}
-		// Set end of arrays
-		//commands[i] = NULL;
-		//pathnames[i] = NULL;
-		//clean_memory(commands, pathnames);
-		//free(line);
+		free(command);
+		free(path);
 		fclose(input);
 		k++;
 		
@@ -190,13 +238,13 @@ int main(int argc, char *argv[])
 	}
 	
 	printf("\n------------------------------ End Error Results ----------------------------- \n");
-	if (!error_count)
+	if (error_count == 0)
 	{
 		printf("\n SUCCESS! All commands executed correctly and ones that expected to fail did!\n");
 	}
 	else
 	{
-		printf(" Almost! There were %d errors, not all commands executed correctly. \n", error_count);
+		printf(" Almost! There were %d errors out of %d total commands.\n", error_count, total);
 	}
 	return;
 }
